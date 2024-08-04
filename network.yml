@@ -40,6 +40,19 @@ Resources:
         - Key: Name
           Value: !Ref EnvironmentName
 
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !GetAtt InternetGateway.InternetGatewayId
+      VpcId: !Ref NguyenT4VPC
+  
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -83,19 +96,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
-
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref EnvironmentName
-
-  InternetGatewayAttachment:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      InternetGatewayId: !Ref InternetGateway
-      VpcId: !Ref NguyenT4VPC
 
   NatGateway1EIP:
     Type: AWS::EC2::EIP

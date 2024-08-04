@@ -14,10 +14,15 @@ Resources:
         Fn::ImportValue:
           !Sub "${EnvironmentName}-VPCID"
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 
   WebServerSecGroup:
     Type: AWS::EC2::SecurityGroup
@@ -27,15 +32,20 @@ Resources:
         Fn::ImportValue:
           !Sub "${EnvironmentName}-VPCID"
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        SourceSecurityGroupId: !Ref LBSecGroup
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: 0
-        ToPort: 65535
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
   WebAppLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties: 
@@ -44,9 +54,9 @@ Resources:
         UserData:
           Fn::Base64: !Sub |
             #!/bin/bash
-            sudo apt-get update -y
-            sudo apt-get install nginx -y
-            sudo service nginx start
+            apt-get update -y
+            apt-get install nginx -y
+            service nginx start
         ImageId: ami-0557a15b87f6559cf
         SecurityGroupIds:
           - !Ref WebServerSecGroup
@@ -101,6 +111,8 @@ Resources:
       MinSize: '1'
       DesiredCapacity: '1'
       MaxSize: '3'
+      TargetGroupARNs:
+      - Ref: WebAppTargetGroup
 
   WebAppLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -149,3 +161,10 @@ Resources:
       VpcId: 
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
+
+Outputs:
+    WebAppLBDNSName:
+        Description: Public endpoint DNS name
+        Value: !Join ["", ["http://", !GetAtt WebAppLB.DNSName]]
+        Export:
+            Name: !Sub ${EnvironmentName}-LB-DNSName
