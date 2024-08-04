@@ -16,4 +16,4 @@ cd starter/
 ./update.sh createudagram udagram.yml udagram-parameters.json
 
 ## Other considerations
-    http://create-webap-5vau8qierugl-1238507648.us-east-1.elb.amazonaws.com/
+    http://create-webap-lvi6wzkxmnzu-1712787971.us-east-1.elb.amazonaws.com/
